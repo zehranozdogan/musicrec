@@ -13,7 +13,8 @@ aynı --prev-dir ile yalnızca o modeli (--models mert) çalıştırman yeter.
 Çıktı düzeni (--out-dir):
     <model>/<tar_adı>.npz   ids (N,), n_win (N,) şarkı başına pencere sayısı,
                             emb (toplam_pencere, ...) float16:
-                            panns (W, 2048), vggish (W, 256: ortalama+std), mert (W, 13, 768), clap (W, 512)
+                            panns (W, 2048), vggish (W, 256: ortalama+std), mert (W, 13, 768), clap (W, 512),
+                            mel (W, 64, 938: sıfırdan CNN için log-mel, 16 kHz)
     splits/{train,validation,test}.tsv, vocab.json, config.json, failed.txt
 """
 import argparse
@@ -46,7 +47,7 @@ URLS = {
 }
 
 
-KNOWN_MODELS = ("panns", "vggish", "mert", "clap")
+KNOWN_MODELS = ("panns", "vggish", "mert", "clap", "mel")
 FORMAT_VERSION = 2
 
 
@@ -63,6 +64,9 @@ def build_embedders(models, device, args) -> dict:
         elif m == "clap":
             from extract_clap import ClapEmbedder
             d[m] = ClapEmbedder(device, args.clap_batch, args.clap_name)
+        elif m == "mel":
+            from extract_mel import MelEmbedder
+            d[m] = MelEmbedder(device)
     return d
 
 
